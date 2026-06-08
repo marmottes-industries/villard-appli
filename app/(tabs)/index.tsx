@@ -11,7 +11,7 @@ export default function AccueilScreen() {
   return (
     <Screen>
       <View style={styles.head}>
-        <Text variant="eyebrow">Les Mélèzes · Villard-de-Lans</Text>
+        <Text variant="eyebrow">Les Marmottes · Villard-de-Lans</Text>
         <Text variant="h1" style={{ marginTop: spacing.xxs }}>Bonjour {user?.username ?? ''} 👋</Text>
       </View>
 

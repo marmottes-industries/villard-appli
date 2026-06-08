@@ -25,7 +25,7 @@ export default function AProposScreen() {
           style={{ paddingHorizontal: 0 }}
         />
         <Text variant="eyebrow" style={{ marginTop: spacing.sm }}>À propos</Text>
-        <Text variant="h1" style={{ marginTop: spacing.xxs }}>Les Mélèzes</Text>
+        <Text variant="h1" style={{ marginTop: spacing.xxs }}>Les Marmottes</Text>
       </View>
       <View style={styles.body}>
         <Card style={{ padding: spacing.lg, backgroundColor: colors.forestDeep }}>
