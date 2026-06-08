@@ -1,0 +1,26 @@
+import { View, StyleSheet } from 'react-native';
+import { Screen, Text, Card } from '@/src/components/ui';
+import { colors, spacing } from '@/src/theme';
+
+export default function PlanningScreen() {
+  return (
+    <Screen>
+      <View style={styles.head}>
+        <Text variant="eyebrow">Planning d'occupation</Text>
+        <Text variant="h1" style={{ marginTop: spacing.xxs }}>Séjours</Text>
+      </View>
+      <View style={styles.body}>
+        <Card>
+          <View style={{ padding: spacing.lg }}>
+            <Text variant="small" color={colors.ink3}>Liste des séjours à venir (à brancher).</Text>
+          </View>
+        </Card>
+      </View>
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  head: { paddingHorizontal: spacing.xl, paddingTop: spacing.md, paddingBottom: spacing.md },
+  body: { paddingHorizontal: spacing.lg },
+});

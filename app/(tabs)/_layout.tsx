@@ -1,34 +1,43 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
+import { Tabs, Redirect } from 'expo-router';
+import { Platform } from 'react-native';
+import { useAuth } from '@/src/stores/auth';
+import { Icon } from '@/src/components/icons/Icon';
+import { accent, colors } from '@/src/theme';
 
-import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+export default function TabsLayout() {
+  const { isAuthenticated } = useAuth();
+  if (!isAuthenticated) return <Redirect href="/login" />;
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
-        tabBarButton: HapticTab,
-      }}>
+        tabBarActiveTintColor: accent.base,
+        tabBarInactiveTintColor: colors.ink3,
+        tabBarLabelStyle: { fontSize: 10.5, fontWeight: '600' },
+        tabBarStyle: {
+          backgroundColor: colors.paper,
+          borderTopColor: colors.line,
+          paddingTop: 6,
+          height: Platform.OS === 'ios' ? 84 : 64,
+        },
+      }}
+    >
       <Tabs.Screen
         name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
-        }}
+        options={{ title: 'Accueil', tabBarIcon: ({ color, size }) => <Icon name="leaf" color={color} size={size} /> }}
       />
       <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-        }}
+        name="planning"
+        options={{ title: 'Planning', tabBarIcon: ({ color, size }) => <Icon name="calendar" color={color} size={size} /> }}
+      />
+      <Tabs.Screen
+        name="inventaire"
+        options={{ title: 'Inventaire', tabBarIcon: ({ color, size }) => <Icon name="box" color={color} size={size} /> }}
+      />
+      <Tabs.Screen
+        name="courses"
+        options={{ title: 'Courses', tabBarIcon: ({ color, size }) => <Icon name="cart" color={color} size={size} /> }}
       />
     </Tabs>
   );
