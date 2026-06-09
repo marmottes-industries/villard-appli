@@ -52,7 +52,6 @@ function RootStack() {
 export default function RootLayout() {
   useEffect(() => {
     if (Platform.OS !== 'android') return;
-    NavigationBar.setBehaviorAsync('overlay-swipe');
     NavigationBar.setVisibilityAsync('hidden');
   }, []);
 

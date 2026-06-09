@@ -65,7 +65,7 @@ A static object exported as `theme` (and individually as `colors`, `spacing`, `r
 
 ### Android edge-to-edge
 
-`_layout.tsx` calls `NavigationBar.setVisibilityAsync('hidden')` + `setBehaviorAsync('overlay-swipe')` on Android only. `app.json` has `edgeToEdgeEnabled: true` and `predictiveBackGestureEnabled: false`. If you add screens with bottom bars, account for the hidden nav bar and use `react-native-safe-area-context` insets.
+`_layout.tsx` calls `NavigationBar.setVisibilityAsync('hidden')` on Android only (`setBehaviorAsync` is not supported with edge-to-edge — the system manages overlay-swipe behavior automatically). `app.json` has `edgeToEdgeEnabled: true` and `predictiveBackGestureEnabled: false`. If you add screens with bottom bars, account for the hidden nav bar and use `react-native-safe-area-context` insets.
 
 ### `design/` directory
 
