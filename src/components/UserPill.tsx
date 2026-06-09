@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { Avatar, Text } from '@/src/components/ui';
 import { Icon } from '@/src/components/icons/Icon';
 import { colors, occupantPalette, radii, shadows, spacing } from '@/src/theme';
@@ -21,6 +22,7 @@ function initials(name: string): string {
 export function UserPill() {
   const { user, logout } = useAuth();
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
 
   const { short, color } = useMemo(() => {
@@ -35,6 +37,11 @@ export function UserPill() {
   async function handleLogout() {
     setOpen(false);
     await logout();
+  }
+
+  function handleAbout() {
+    setOpen(false);
+    router.push('/apropos');
   }
 
   const top = insets.top + spacing.sm;
@@ -73,6 +80,15 @@ export function UserPill() {
               </View>
             </View>
             <View style={styles.sep} />
+            <Pressable
+              onPress={handleAbout}
+              style={({ pressed }) => [styles.action, pressed && { backgroundColor: colors.card3 }]}
+            >
+              <Icon name="info" size={18} color={colors.ink} />
+              <Text variant="body" weight="600">
+                À propos
+              </Text>
+            </Pressable>
             <Pressable
               onPress={handleLogout}
               style={({ pressed }) => [styles.action, pressed && { backgroundColor: colors.card3 }]}

@@ -6,7 +6,7 @@ export type IconName =
   | 'chevL' | 'chevR' | 'chevD' | 'search' | 'check' | 'x' | 'user' | 'users'
   | 'gear' | 'trash' | 'alert' | 'clock' | 'grid' | 'cols' | 'list' | 'arrow'
   | 'pin' | 'linen' | 'dish' | 'bath' | 'refresh' | 'edit' | 'logout' | 'menu'
-  | 'mobile' | 'note' | 'sun' | 'tools' | 'home';
+  | 'mobile' | 'note' | 'sun' | 'tools' | 'home' | 'info';
 
 // Mapping vers @expo/vector-icons (style linear, stroke ~1.6 -> Feather).
 // Quelques entrées tombent sur MaterialCommunityIcons faute d'équivalent Feather.
@@ -51,6 +51,7 @@ const MAP: Record<IconName, Mapping> = {
   sun:      { lib: 'feather', name: 'sun' },
   tools:    { lib: 'feather', name: 'tool' },
   home:     { lib: 'feather', name: 'home' },
+  info:     { lib: 'feather', name: 'info' },
 };
 
 type Props = {
