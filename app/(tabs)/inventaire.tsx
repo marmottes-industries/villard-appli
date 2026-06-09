@@ -125,7 +125,7 @@ export default function InventaireScreen() {
   }
 
   return (
-    <Screen>
+    <Screen onRefresh={retry}>
       <View style={styles.head}>
         <Text variant="eyebrow">Suivi d&apos;inventaire</Text>
         <Text variant="h1" style={{ marginTop: spacing.xxs }}>Inventaire</Text>

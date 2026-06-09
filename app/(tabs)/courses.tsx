@@ -150,7 +150,7 @@ export default function CoursesScreen() {
   }
 
   return (
-    <Screen>
+    <Screen onRefresh={retry}>
       <View style={styles.head}>
         <Text variant="eyebrow">Liste & ravitaillement</Text>
         <Text variant="h1" style={{ marginTop: spacing.xxs }}>Courses</Text>

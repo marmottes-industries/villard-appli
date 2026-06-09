@@ -138,8 +138,12 @@ export default function PlanningScreen() {
   const editingOccupation = formInitial?.mode === 'edit' ? formInitial.occupation : null;
   const canDeleteOpen = editingOccupation ? canEdit(editingOccupation) : false;
 
+  const handleRefresh = async () => {
+    await Promise.all([occupations.fetchAll(), users.fetchAll()]);
+  };
+
   return (
-    <Screen>
+    <Screen onRefresh={handleRefresh}>
       <View style={styles.head}>
         <View style={styles.headRow}>
           <View style={{ flex: 1 }}>

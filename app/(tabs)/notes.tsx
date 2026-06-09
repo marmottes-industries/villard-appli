@@ -95,7 +95,7 @@ export default function NotesScreen() {
     modalInitial?.mode === 'edit' ? canEdit(modalInitial.note) : false;
 
   return (
-    <Screen>
+    <Screen onRefresh={retry}>
       <View style={styles.head}>
         <Text variant="eyebrow">Le chalet</Text>
         <Text variant="h1" style={{ marginTop: spacing.xxs }}>Notes</Text>
