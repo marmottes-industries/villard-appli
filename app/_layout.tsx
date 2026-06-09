@@ -1,5 +1,5 @@
 import 'react-native-gesture-handler';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as NavigationBar from 'expo-navigation-bar';
@@ -7,10 +7,14 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Platform, View, ActivityIndicator, StyleSheet } from 'react-native';
 import { AuthProvider, useAuth } from '@/src/stores/auth';
+import { useAppVersionCheck } from '@/src/stores/appVersion';
+import { UpdateModal } from '@/src/components/UpdateModal';
 import { colors } from '@/src/theme';
 
 function RootStack() {
   const { hydrating } = useAuth();
+  const version = useAppVersionCheck();
+  const [dismissed, setDismissed] = useState(false);
 
   if (hydrating) {
     return (
@@ -20,14 +24,28 @@ function RootStack() {
     );
   }
 
+  const showModal =
+    (version.status === 'outdated-forced') ||
+    (version.status === 'outdated-suggested' && !dismissed);
+
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-        contentStyle: { backgroundColor: colors.paper },
-        animation: 'fade',
-      }}
-    />
+    <>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: colors.paper },
+          animation: 'fade',
+        }}
+      />
+      <UpdateModal
+        visible={showModal}
+        forced={version.status === 'outdated-forced'}
+        currentVersion={version.currentVersion}
+        latestVersion={version.latestVersion}
+        storeUrl={version.storeUrl}
+        onDismiss={() => setDismissed(true)}
+      />
+    </>
   );
 }
 

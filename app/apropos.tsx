@@ -1,5 +1,6 @@
 import { View, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
+import * as Application from 'expo-application';
 import { Screen, Text, Card, Button } from '@/src/components/ui';
 import { Icon } from '@/src/components/icons/Icon';
 import { useAuth } from '@/src/stores/auth';
@@ -8,6 +9,8 @@ import { colors, spacing } from '@/src/theme';
 export default function AProposScreen() {
   const router = useRouter();
   const { logout, user } = useAuth();
+  const appVersion = Application.nativeApplicationVersion ?? '—';
+  const buildVersion = Application.nativeBuildVersion ?? '—';
 
   async function onLogout() {
     await logout();
@@ -33,6 +36,13 @@ export default function AProposScreen() {
           <Text variant="h3" color="#fff" style={{ marginTop: spacing.xs }}>API · Symfony / API Platform</Text>
           <Text variant="small" color="#A9C0A2" style={{ marginTop: spacing.xs }}>
             Connecté en tant que {user?.username ?? '—'}.
+          </Text>
+        </Card>
+
+        <Card style={{ padding: spacing.lg, marginTop: spacing.sm }}>
+          <Text variant="eyebrow">Version</Text>
+          <Text variant="body" style={{ marginTop: spacing.xs }}>
+            {appVersion} <Text variant="small" color={colors.ink3}>(build {buildVersion})</Text>
           </Text>
         </Card>
 
