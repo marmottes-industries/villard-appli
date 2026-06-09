@@ -3,5 +3,5 @@ import { useAuth } from '@/src/stores/auth';
 
 export default function Index() {
   const { isAuthenticated } = useAuth();
-  return <Redirect href={isAuthenticated ? '/(tabs)' : '/login'} />;
+  return <Redirect href={isAuthenticated ? '/(tabs)/planning' : '/login'} />;
 }

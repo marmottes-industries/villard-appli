@@ -295,7 +295,7 @@ function formatActionError(err: unknown): string {
 }
 
 const styles = StyleSheet.create({
-  head: { paddingHorizontal: spacing.xl, paddingTop: spacing.md, paddingBottom: spacing.md },
+  head: { paddingLeft: spacing.xl, paddingRight: spacing.xl + 44, paddingTop: spacing.md, paddingBottom: spacing.md },
   headRow: { flexDirection: 'row', alignItems: 'flex-end', gap: spacing.md },
   body: { paddingHorizontal: spacing.lg, gap: spacing.lg },
   center: { padding: spacing.xxl, alignItems: 'center' },

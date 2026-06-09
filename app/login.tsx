@@ -17,7 +17,7 @@ export default function LoginScreen() {
     setSubmitting(true);
     try {
       await login({ username, password });
-      router.replace('/(tabs)');
+      router.replace('/(tabs)/planning');
     } catch (err) {
       Alert.alert('Connexion impossible', err instanceof Error ? err.message : 'Erreur inconnue');
     } finally {
