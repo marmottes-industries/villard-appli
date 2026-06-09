@@ -1,7 +1,14 @@
+<!--
+  Source de vérité : villard-api/API.md.
+  Dans villard-front/ et villard-appli/, ce fichier est synchronisé via `./scripts/sync-api-docs.sh`
+  (ou `npm run sync:docs`). Ne pas éditer la copie : modifier villard-api/API.md, push, puis re-sync.
+-->
+
 # Les Marmottes — API Reference
 
-Documentation de l'API backend (`villard-api`) à destination du client front (`villard-front`).
-Ce fichier est conçu pour être copié à la racine du repo front et lu directement par l'agent Claude du projet front.
+Documentation de l'API backend (`villard-api`) à destination des clients (web `villard-front` + mobile `villard-appli`).
+Ce fichier est synchronisé automatiquement depuis `villard-api` vers les repos consommateurs et lu directement par les
+agents Claude.
 
 > **Stack backend**: Symfony 8.1 + API Platform 4.x + Doctrine + MariaDB + LexikJWT + gesdinet/jwt-refresh-token-bundle.
 > **Préfixe global**: toutes les routes API sont sous `/api`.
@@ -24,7 +31,8 @@ Documentation interactive Swagger : `GET /api/docs` (accès public).
 
 ## 2. Authentification (JWT + refresh)
 
-L'API est **stateless**. Toutes les routes sous `/api` (sauf `/api/login`, `/api/token/refresh` et `/api/docs`) exigent un JWT valide.
+L'API est **stateless**. Toutes les routes sous `/api` (sauf `/api/login`, `/api/token/refresh`, `/api/docs` et
+`/api/app/version`) exigent un JWT valide.
 
 ### 2.1 Login
 
@@ -86,10 +94,15 @@ Content-Type: application/json
 Côté serveur :
 
 - **TTL refresh token** : 30 jours, **glissant** — chaque refresh repart pour 30 jours d'activité.
-- **Rotation activée** (`single_use: true`) : un refresh token ne sert qu'**une seule fois**. Stocker uniquement le dernier `refresh_token` reçu et écraser à chaque refresh.
+- **Rotation activée** (`single_use: true`) : un refresh token ne sert qu'**une seule fois**. Stocker uniquement le
+  dernier `refresh_token` reçu et écraser à chaque refresh.
 - Un utilisateur inactif > 30 jours doit refaire un `POST /api/login`.
 
-> ⚠️ Stratégie front recommandée : intercepteur HTTP qui sur `401` (autre que sur `/api/login`) tente **un seul** appel à `/api/token/refresh`, rejoue la requête initiale avec le nouveau token, et si le refresh lui-même renvoie `401` → déconnexion + redirection vers le login. Verrouiller les refreshs concurrents (mutex/queue) pour éviter qu'une vague de 401 ne fasse appeler `/api/token/refresh` 10× en parallèle : seul le premier réussit, les autres invalideront le nouveau refresh (rotation).
+> ⚠️ Stratégie front recommandée : intercepteur HTTP qui sur `401` (autre que sur `/api/login`) tente **un seul** appel
+> à `/api/token/refresh`, rejoue la requête initiale avec le nouveau token, et si le refresh lui-même renvoie `401` →
+> déconnexion + redirection vers le login. Verrouiller les refreshs concurrents (mutex/queue) pour éviter qu'une vague de
+> 401 ne fasse appeler `/api/token/refresh` 10× en parallèle : seul le premier réussit, les autres invalideront le nouveau
+> refresh (rotation).
 
 ### 2.4 Rôles
 
@@ -290,6 +303,54 @@ Calendrier d'occupation de l'appartement.
 
 Dates au format ISO 8601 (`YYYY-MM-DD` accepté pour les `date_immutable`).
 
+### 4.7 Work — `/api/works`
+
+Travaux à réaliser dans l'appartement (bricolage à faire soi-même ou prestation externe). Suivi du cycle de vie via `status`,
+priorisation et chiffrage estimé / réel.
+
+| Op                      | Sécurité                                          |
+|-------------------------|---------------------------------------------------|
+| GET (collection / item) | `ROLE_USER`                                       |
+| POST                    | `ROLE_ADMIN` **ou** auteur = utilisateur courant  |
+| PUT / PATCH             | `ROLE_ADMIN` **ou** auteur (avant **et** après) = user courant |
+| DELETE                  | `ROLE_ADMIN` **ou** auteur = utilisateur courant  |
+
+```json
+{
+    "id": 5,
+    "title": "Repeindre les volets",
+    "description": "Décaper et appliquer 2 couches de peinture extérieure",
+    "status": "planned",
+    "type": "diy",
+    "priority": "medium",
+    "author": "/api/users/2",
+    "createdAt": "2026-06-09T09:30:00+00:00",
+    "scheduledFor": "2026-07-12",
+    "completedAt": null,
+    "estimatedCost": 120,
+    "actualCost": null
+}
+```
+
+Champs :
+
+- `title` (string, **requis**, 255 caractères).
+- `description` (text, optionnel) — texte long libre.
+- `status` (enum, défaut `"suggested"`) : `"suggested"`, `"planned"`, `"in_progress"`, `"done"`, `"cancelled"`.
+- `type` (enum, optionnel) : `"diy"` (à faire soi-même) ou `"pro"` (à faire faire).
+- `priority` (enum, optionnel) : `"low"`, `"medium"`, `"high"`.
+- `author` (IRI User, **requis**) — auto-rempli avec l'utilisateur courant en `POST` si omis.
+- `createdAt` (datetime, ISO 8601) — **auto-rempli côté serveur à la création**, lecture seule.
+- `scheduledFor` (date, `YYYY-MM-DD`, optionnel) — date prévue.
+- `completedAt` (datetime, optionnel) — **auto-rempli côté serveur dès que `status` passe à `"done"`** si non fourni
+  (sur n'importe quelle opération, `POST` comme `PUT`/`PATCH`).
+- `estimatedCost` (int, optionnel) — en euros.
+- `actualCost` (int, optionnel) — en euros.
+
+> Implémenté via le processor `App\State\WorkProcessor`. À la création (`POST`), il pose `createdAt = now()` et assigne
+> `author = utilisateur courant` si le champ est vide. À chaque écriture (toutes opérations), si `status === "done"` et
+> que `completedAt` n'est pas fourni, le serveur le pose à `now()`.
+
 ---
 
 ## 5. Exemples d'appels (front)
@@ -376,12 +437,13 @@ await api('/occupations', {
 2. **PATCH** → `Content-Type: application/merge-patch+json` sinon `415`.
 3. Préférer `Accept: application/json` pour des payloads plats ; passer en `application/ld+json` uniquement si on a
    besoin de l'hypermedia/pagination Hydra.
-4. Le JWT expire au bout d'1 h : intercepteur qui sur `401` tente un refresh (§2.3), rejoue la requête, et déconnecte uniquement si le refresh échoue lui-même.
+4. Le JWT expire au bout d'1 h : intercepteur qui sur `401` tente un refresh (§2.3), rejoue la requête, et déconnecte
+   uniquement si le refresh échoue lui-même.
 5. **Pas de breaking changes côté serveur** : si le front a besoin d'un champ supplémentaire ou d'un endpoint custom,
    ouvrir une issue plutôt que de bidouiller. L'API doit rester consommable par d'autres clients (mobile à venir).
 6. La pluralisation des URLs suit la convention API Platform : `Category → categories`,
    `InventoryItem → inventory_items`, `ShoppingItem → shopping_items`, `Note → notes`, `Occupation → occupations`,
-   `User → users`.
+   `Work → works`, `User → users`.
 
 ---
 
@@ -400,27 +462,91 @@ Implémenté via `App\State\MeProvider` (cf. `src/State/MeProvider.php`). Si l'u
 
 ---
 
-## 8. Filtres, recherche & tri
+## 8. Endpoint `/api/app/version`
 
-Toutes les collections (`GET /api/<resource>`) acceptent des paramètres de filtrage et de tri via la query string. Les paramètres se combinent en AND.
+`GET /api/app/version` — **public** (pas d'`Authorization` requis). Renvoie la version publiée et la version minimale
+supportée du client mobile, utilisées par l'app pour décider d'afficher un modal de mise à jour au démarrage.
+
+```
+GET /api/app/version
+Accept: application/json
+```
+
+**Réponse 200** :
+
+```json
+{
+    "latestVersion": "1.0.0",
+    "minVersion": "1.0.0",
+    "iosStoreUrl": "https://apps.apple.com/app/idXXXXXXXXXX",
+    "androidStoreUrl": "https://play.google.com/store/apps/details?id=fr.antoninpamart.villardappli"
+}
+```
+
+| Champ             | Type   | Sémantique                                                                                     |
+|-------------------|--------|------------------------------------------------------------------------------------------------|
+| `latestVersion`   | string | Dernière version publiée. Si app < `latestVersion` → modal **dismissible** (« Plus tard »).    |
+| `minVersion`      | string | Version minimale supportée. Si app < `minVersion` → modal **bloquant** (pas de « Plus tard »). |
+| `iosStoreUrl`     | string | URL App Store ouverte par le bouton « Mettre à jour » sur iOS.                                 |
+| `androidStoreUrl` | string | URL Play Store ouverte par le bouton « Mettre à jour » sur Android.                            |
+
+Format des versions : `MAJOR.MINOR.PATCH` (semver simplifié, pas de suffixe pré-release).
+
+> Réponse en `application/json` plat — **pas** une collection JSON-LD (`@type`/`member`). Le client traite l'objet tel
+> quel.
+
+### Comparaison côté front
+
+- La version « courante » comparée est `Application.nativeApplicationVersion` (lib `expo-application`), qui provient de
+  `app.json` → `expo.version` au moment du build natif.
+- Cette version s'affiche sur l'écran **À propos** de l'app (`app/apropos.tsx`).
+- Le check est lancé au démarrage en parallèle de l'hydratation de l'auth ; si l'appel échoue (réseau, endpoint
+  indisponible), on ne bloque pas l'app.
+- ⚠️ Sous **Expo Go**, `nativeApplicationVersion` renvoie la version d'Expo Go, pas celle de l'app — utiliser un dev
+  build EAS pour tester réellement.
+
+### Stratégie de bump (backend)
+
+Variables d'env côté `villard-api` :
+
+```dotenv
+APP_VERSION_LATEST=1.0.0
+APP_VERSION_MIN=1.0.0
+APP_STORE_IOS_URL=https://apps.apple.com/app/idXXXXXXXXXX
+APP_STORE_ANDROID_URL=https://play.google.com/store/apps/details?id=fr.antoninpamart.villardappli
+```
+
+- **Update non bloquant** : bump `APP_VERSION_LATEST` uniquement.
+- **Update forcé** (breaking change d'API, retrait d'un endpoint…) : bump `APP_VERSION_MIN` *en plus* de
+  `APP_VERSION_LATEST`.
+
+---
+
+## 9. Filtres, recherche & tri
+
+Toutes les collections (`GET /api/<resource>`) acceptent des paramètres de filtrage et de tri via la query string. Les
+paramètres se combinent en AND.
 
 ### Stratégies courantes
 
-- **SearchFilter `exact`** : égalité stricte. Sur une relation, on accepte l'IRI (`?category=/api/categories/1`) **ou** l'id nu (`?category=1`).
+- **SearchFilter `exact`** : égalité stricte. Sur une relation, on accepte l'IRI (`?category=/api/categories/1`) **ou**
+  l'id nu (`?category=1`).
 - **SearchFilter `ipartial`** : `LIKE %valeur%` insensible à la casse, pour les recherches en texte libre.
-- **DateFilter** : suffixes `[before]`, `[strictly_before]`, `[after]`, `[strictly_after]`. Exemple : `?createdAt[after]=2026-01-01`.
+- **DateFilter** : suffixes `[before]`, `[strictly_before]`, `[after]`, `[strictly_after]`. Exemple :
+  `?createdAt[after]=2026-01-01`.
 - **BooleanFilter** : `true` / `false` (ou `1` / `0`).
 - **OrderFilter** : `?order[champ]=asc|desc`, plusieurs champs autorisés.
 
 ### Récapitulatif par ressource
 
-| Ressource | Search | Date | Order | Booléen |
-|-----------|--------|------|-------|---------|
-| `Category` | `name` (ipartial) | — | `name` | — |
-| `InventoryItem` | `name` (ipartial), `category` (exact), `state` (exact), `note` (ipartial), `location` (ipartial) | — | `name`, `quantity`, `state` | — |
-| `ShoppingItem` | `name` (ipartial), `category` (exact) | — | `name`, `purchased` | `purchased` |
-| `Note` | `title` (ipartial), `content` (ipartial), `author` (exact), `author.uuid` (exact) | `createdAt` | `createdAt`, `title` | — |
-| `Occupation` | `occupant` (exact), `occupant.uuid` (exact), `notes` (ipartial) | `startDate`, `endDate` | `startDate`, `endDate` | — |
+| Ressource       | Search                                                                                           | Date                   | Order                       | Booléen     |
+|-----------------|--------------------------------------------------------------------------------------------------|------------------------|-----------------------------|-------------|
+| `Category`      | `name` (ipartial)                                                                                | —                      | `name`                      | —           |
+| `InventoryItem` | `name` (ipartial), `category` (exact), `state` (exact), `note` (ipartial), `location` (ipartial) | —                      | `name`, `quantity`, `state` | —           |
+| `ShoppingItem`  | `name` (ipartial), `category` (exact)                                                            | —                      | `name`, `purchased`         | `purchased` |
+| `Note`          | `title` (ipartial), `content` (ipartial), `author` (exact), `author.uuid` (exact)                | `createdAt`            | `createdAt`, `title`        | —           |
+| `Occupation`    | `occupant` (exact), `occupant.uuid` (exact), `notes` (ipartial)                                  | `startDate`, `endDate` | `startDate`, `endDate`      | —           |
+| `Work`          | `title` (ipartial), `description` (ipartial), `author.uuid` (exact), `status` (exact), `type` (exact), `priority` (exact) | `createdAt`, `scheduledFor` | `createdAt`, `scheduledFor`, `priority`, `status` | —           |
 
 ### Exemples
 
@@ -436,13 +562,16 @@ GET /api/inventory_items?category=/api/categories/2&state=replace
 
 # Courses restantes triées par nom
 GET /api/shopping_items?purchased=false&order[name]=asc
+
+# Travaux planifiés ou en cours, prioritaires d'abord
+GET /api/works?status=planned&order[priority]=desc&order[scheduledFor]=asc
 ```
 
 Les filtres apparaissent aussi dans `/api/docs` (Swagger UI) pour chaque collection.
 
 ---
 
-## 9. Endpoints non encore exposés
+## 10. Endpoints non encore exposés
 
 À demander au backend si besoin côté front :
 
