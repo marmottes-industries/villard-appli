@@ -35,7 +35,7 @@ export default function LoginScreen() {
           <Text variant="eyebrow" color="#93Ad8d">Les Marmottes</Text>
           <Text variant="h1" color="#fff" style={{ marginTop: spacing.xs }}>Bonjour 👋</Text>
           <Text variant="small" color="#A9C0A2" style={{ marginTop: spacing.xs }}>
-            Connectez-vous pour gérer l'appartement.
+            Connectez-vous pour gérer l&apos;appartement.
           </Text>
         </View>
 
