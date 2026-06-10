@@ -147,7 +147,7 @@ export default function PlanningScreen() {
       <View style={styles.head}>
         <View style={styles.headRow}>
           <View style={{ flex: 1 }}>
-            <Text variant="eyebrow">Planning d'occupation</Text>
+            <Text variant="eyebrow">Planning d&apos;occupation</Text>
             <Text variant="h1" style={{ marginTop: spacing.xxs }}>Séjours</Text>
           </View>
           <Button

@@ -1,0 +1,117 @@
+name: Release Android
+
+# Construit l'APK Android et la publie sur une release GitHub.
+#  - push d'un tag `vX.Y.Z`  -> build + release publique avec l'APK attachée
+#  - lancement manuel         -> build de test, APK disponible en artifact (pas de release)
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build & publish APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: gradle
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Resolve version
+        id: version
+        run: |
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+          else
+            VERSION="dev-${GITHUB_RUN_NUMBER}"
+          fi
+          echo "value=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Version: ${VERSION}"
+
+      - name: Configure API URL (optionnel)
+        # Surcharge EXPO_PUBLIC_API_URL si la variable de dépôt est définie,
+        # sinon on garde la valeur du .env commité.
+        env:
+          API_URL: ${{ vars.EXPO_PUBLIC_API_URL }}
+        run: |
+          if [ -n "${API_URL}" ]; then
+            echo "EXPO_PUBLIC_API_URL=${API_URL}" > .env
+          fi
+          echo "API URL utilisée : $(cat .env)"
+
+      - name: Prebuild (génère le projet android natif)
+        run: npx expo prebuild --platform android --no-install
+
+      - name: Signature avec la keystore du dépôt
+        # Le buildType `release` utilise signingConfigs.debug -> on remplace la
+        # keystore générée par celle commitée pour garantir une signature
+        # constante entre les versions (mises à jour sans désinstallation).
+        run: cp keystore/release.keystore android/app/debug.keystore
+
+      - name: Injecte version & versionCode
+        run: |
+          sed -i -E "s/versionName \"[^\"]*\"/versionName \"${{ steps.version.outputs.value }}\"/" android/app/build.gradle
+          sed -i -E "s/versionCode [0-9]+/versionCode ${GITHUB_RUN_NUMBER}/" android/app/build.gradle
+          grep -E "versionName|versionCode" android/app/build.gradle
+
+      - name: Build release APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon
+
+      - name: Renomme l'APK
+        run: |
+          mkdir -p dist
+          cp android/app/build/outputs/apk/release/app-release.apk \
+            "dist/les-marmottes-${{ steps.version.outputs.value }}.apk"
+
+      - name: Upload artifact (build de test)
+        uses: actions/upload-artifact@v4
+        with:
+          name: les-marmottes-${{ steps.version.outputs.value }}
+          path: dist/*.apk
+
+      - name: Extrait les notes de version
+        if: github.ref_type == 'tag'
+        run: |
+          VERSION="${{ steps.version.outputs.value }}"
+          awk '/^## \[/{p=0} /^\[.*\]: /{p=0} /^## \['"$VERSION"'\]/{p=1;next} p' CHANGELOG.md > RELEASE_NOTES.md
+          if [ ! -s RELEASE_NOTES.md ]; then
+            echo "Voir le CHANGELOG.md pour le détail des changements." > RELEASE_NOTES.md
+          fi
+          {
+            echo ""
+            echo "---"
+            echo "📲 **Installation** : téléchargez le \`.apk\` ci-dessous sur votre téléphone Android, ouvrez-le, et autorisez l'installation depuis cette source si demandé."
+          } >> RELEASE_NOTES.md
+
+      - name: Publie la release GitHub
+        if: github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Les Marmottes ${{ github.ref_name }}
+          body_path: RELEASE_NOTES.md
+          files: dist/*.apk
+          fail_on_unmatched_files: true

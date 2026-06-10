@@ -1,50 +1,78 @@
-# Welcome to your Expo app 👋
+# Les Marmottes 🦫
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Application mobile familiale pour gérer l'appartement de montagne : planning des
+séjours, inventaire, liste de courses, notes et suivi des travaux.
 
-## Get started
+Client léger (Expo / React Native) de l'API [`villard-api`](https://github.com/marmottes-industries)
+(Symfony + API Platform 4). Usage **privé**, distribué en APK Android via les
+[releases GitHub](https://github.com/marmottes-industries/villard-appli/releases).
 
-1. Install dependencies
+> iOS n'est pas publié — c'est une app pour la famille, sur Android.
 
-   ```bash
-   npm install
-   ```
+## 📲 Installer l'app (utilisateur)
 
-2. Start the app
+1. Ouvrez la dernière [release](https://github.com/marmottes-industries/villard-appli/releases/latest).
+2. Téléchargez le fichier `les-marmottes-x.y.z.apk` directement sur votre téléphone Android.
+3. Ouvrez le fichier téléchargé. Android demandera l'autorisation d'installer
+   depuis cette source : acceptez.
+4. Lancez **Les Marmottes** et connectez-vous.
 
-   ```bash
-   npx expo start
-   ```
+Les mises à jour s'installent par-dessus la version précédente (signature
+constante) — pas besoin de désinstaller.
 
-In the output, you'll find options to open the app in a
+## 🛠️ Développement
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+Pré-requis : Node 20+, un appareil ou émulateur Android, et l'API `villard-api`
+accessible.
 
 ```bash
-npm run reset-project
+npm install
+cp .env.example .env        # renseignez EXPO_PUBLIC_API_URL (IP LAN de l'API)
+npm run start               # Metro
+npm run android             # build + lancement sur appareil/émulateur Android
+npm run lint                # ESLint (eslint-config-expo)
+npx tsc --noEmit            # vérification de types
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+L'URL de l'API est lue depuis `.env` (`EXPO_PUBLIC_API_URL`). Les variables
+`EXPO_PUBLIC_*` sont injectées au démarrage du bundler — **redémarrez Metro**
+après une modification.
 
-## Learn more
+L'architecture du projet (routing Expo Router, auth JWT, stores par ressource,
+thème, conventions) est documentée dans [`CLAUDE.md`](./CLAUDE.md). Le contrat
+backend est dans [`API.md`](./API.md).
 
-To learn more about developing your project with Expo, look at the following resources:
+## 🚀 Publier une release Android
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Voir le guide détaillé : [`docs/RELEASE.md`](./docs/RELEASE.md).
 
-## Join the community
+En résumé :
 
-Join our community of developers creating universal apps.
+```bash
+# 1. Mettre à jour la version dans app.json + package.json (ex. 1.1.0)
+# 2. Compléter le CHANGELOG.md (déplacer "Non publié" -> [1.1.0])
+git commit -am "chore(release): 1.1.0"
+git tag v1.1.0
+git push origin main --tags
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Le push du tag déclenche le workflow [`release-android.yml`](./.github/workflows/release-android.yml)
+qui construit l'APK et crée automatiquement la release GitHub avec l'APK attachée
+et les notes extraites du `CHANGELOG.md`.
+
+## 📂 Structure
+
+```
+app/            Routes (Expo Router v6, file-based)
+src/api/        Clients d'API (axios + intercepteurs auth/collection)
+src/stores/     État par ressource (hooks + AsyncState) + AuthProvider
+src/components/ Composants UI et métier
+src/theme/      Thème statique (couleurs, espacements, typo)
+src/lib/        Utilitaires (storage, dates, versions)
+keystore/       Keystore de signature de l'APK release
+.github/        Workflow CI de release Android
+```
+
+## 📜 Licence
+
+Projet privé à usage familial. Tous droits réservés.
