@@ -7,6 +7,13 @@ et ce projet suit le [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+## [1.1.0] - 2026-06-11
+
+### Ajouté
+
+- **Push notifications** : notifications de rappel pour l'inventaire et les courses en fin de séjour.
+- **setup eas et firebase pour le dev** : configuration des services de notifications push.
+
 ## [1.0.0] - 2026-06-10
 
 Première version publique, distribuée en APK Android via les *releases* GitHub.
@@ -35,5 +42,6 @@ Première version publique, distribuée en APK Android via les *releases* GitHub
 - L'app est un client léger de l'API `villard-api` (Symfony + API Platform 4).
   L'URL de l'API est lue depuis `EXPO_PUBLIC_API_URL` au moment du build.
 
-[Non publié]: https://github.com/marmottes-industries/villard-appli/compare/v1.0.0...HEAD
+[Non publié]: https://github.com/marmottes-industries/villard-appli/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/marmottes-industries/villard-appli/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/marmottes-industries/villard-appli/releases/tag/v1.0.0
