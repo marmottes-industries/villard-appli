@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { authApi, type LoginPayload, type User } from '@/src/api/auth';
 import { REFRESH_TOKEN_KEY, TOKEN_KEY, setOnUnauthorized } from '@/src/api/client';
 import { storage } from '@/src/lib/storage';
+import { clearPushRegistration, syncPushRegistration } from '@/src/lib/pushRegistration';
 
 type AuthState = {
   token: string | null;
@@ -28,6 +29,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = useCallback(async () => {
+    // Unregister this device's push token before dropping the token (the call is
+    // authenticated). Best-effort — never block logout on it.
+    await clearPushRegistration();
     setToken(null);
     setUser(null);
     tokenRef.current = null;
@@ -42,6 +46,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     tokenRef.current = data.token;
     setToken(data.token);
     await refreshUser();
+    // Register for push in the background — don't make login await it.
+    void syncPushRegistration();
   }, [refreshUser]);
 
   useEffect(() => {
@@ -59,6 +65,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setToken(stored);
       if (stored) {
         try { await refreshUser(); } catch { /* swallow — interceptor handles 401 */ }
+        // Refresh the push registration on every cold start (token may have rotated).
+        void syncPushRegistration();
       }
       setHydrating(false);
     })();

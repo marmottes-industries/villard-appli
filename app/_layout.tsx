@@ -9,12 +9,14 @@ import { Platform, View, ActivityIndicator, StyleSheet } from 'react-native';
 import { AuthProvider, useAuth } from '@/src/stores/auth';
 import { useAppVersionCheck } from '@/src/stores/appVersion';
 import { UpdateModal } from '@/src/components/UpdateModal';
+import { useNotificationObserver } from '@/src/lib/notifications';
 import { colors } from '@/src/theme';
 
 function RootStack() {
   const { hydrating } = useAuth();
   const version = useAppVersionCheck();
   const [dismissed, setDismissed] = useState(false);
+  useNotificationObserver();
 
   if (hydrating) {
     return (
