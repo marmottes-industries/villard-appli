@@ -14,7 +14,10 @@ export const devicePlatform = (): DevicePlatform =>
  */
 export async function registerForPushNotifications(): Promise<string | null> {
   // Remote push only works on physical devices.
-  if (!Device.isDevice || Platform.OS === 'web') return null;
+  if (!Device.isDevice || Platform.OS === 'web') {
+    if (__DEV__) console.warn('[push] not a physical device (or web) — skipping push token.');
+    return null;
+  }
 
   try {
     const { status: existing } = await Notifications.getPermissionsAsync();
@@ -23,7 +26,10 @@ export async function registerForPushNotifications(): Promise<string | null> {
       const req = await Notifications.requestPermissionsAsync();
       status = req.status;
     }
-    if (status !== 'granted') return null;
+    if (status !== 'granted') {
+      if (__DEV__) console.warn('[push] notification permission not granted:', status);
+      return null;
+    }
 
     if (Platform.OS === 'android') {
       await Notifications.setNotificationChannelAsync('default', {
@@ -42,9 +48,10 @@ export async function registerForPushNotifications(): Promise<string | null> {
     }
 
     const { data } = await Notifications.getExpoPushTokenAsync({ projectId });
+    if (__DEV__) console.log('[push] got Expo push token:', data);
     return data;
   } catch (err) {
-    if (__DEV__) console.warn('[push] registration failed', err);
+    if (__DEV__) console.warn('[push] getExpoPushTokenAsync failed', err);
     return null;
   }
 }

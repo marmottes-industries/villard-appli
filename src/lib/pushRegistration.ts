@@ -12,15 +12,22 @@ const PUSH_DEVICE_ID_KEY = 'push_device_id';
 export async function syncPushRegistration(): Promise<void> {
   try {
     const token = await registerForPushNotifications();
-    if (!token) return;
+    if (!token) {
+      if (__DEV__) console.warn('[push] no token — device not registered with API.');
+      return;
+    }
 
     const { data } = await deviceTokensApi.register({
       token,
       platform: devicePlatform(),
     });
     await storage.setItem(PUSH_DEVICE_ID_KEY, String(data.id));
-  } catch {
-    /* best-effort: ignore */
+    if (__DEV__) console.log('[push] device token registered with API, id:', data.id);
+  } catch (err) {
+    if (__DEV__) {
+      const e = err as { response?: { status?: number; data?: unknown } };
+      console.warn('[push] device_tokens register failed', e.response?.status, e.response?.data ?? err);
+    }
   }
 }
 

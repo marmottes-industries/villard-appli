@@ -20,7 +20,8 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.marmottesindustries.lesmarmottes"
+      "package": "com.marmottesindustries.lesmarmottes",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "output": "static",
@@ -47,6 +48,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "18d76d3f-796a-41d3-9f15-1fcf36fadc43"
+      }
+    },
+    "owner": "callmetrinity"
   }
 }

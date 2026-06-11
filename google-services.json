@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "807937631498",
+    "project_id": "android-e075a",
+    "storage_bucket": "android-e075a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:807937631498:android:580cf9e4f6a4b616b406f3",
+        "android_client_info": {
+          "package_name": "com.marmottesindustries.lesmarmottes"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDlrll3n8Z7DLCXfI3pFrbm90MZeF0gpsQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

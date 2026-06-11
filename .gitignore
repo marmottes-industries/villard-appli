@@ -19,6 +19,9 @@ expo-env.d.ts
 *.key
 *.mobileprovision
 
+# FCM service account key (secret — used by EAS to send push). NOT google-services.json.
+google-service-account*.json
+
 # Metro
 .metro-health-check*
 
