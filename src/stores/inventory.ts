@@ -39,24 +39,21 @@ export function useInventory() {
   }, []);
 
   // MAJ optimiste avec rollback en cas d'erreur — pour stepper qty / cycle d'état.
+  // Ne pas lire `previous` depuis l'updater de setItems : il n'est pas exécuté
+  // de façon synchrone, l'appel API serait court-circuité (PATCH jamais envoyé).
   const patch = useCallback(async (id: number, payload: InventoryUpdatePayload) => {
-    let previous: InventoryItem | undefined;
-    setItems((prev) => {
-      previous = prev.find((i) => i.id === id);
-      if (!previous) return prev;
-      return prev.map((i) => (i.id === id ? { ...i, ...payload } : i));
-    });
+    const previous = items.find((i) => i.id === id);
     if (!previous) return;
+    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, ...payload } : i)));
     try {
       const { data } = await inventoryApi.update(id, payload);
       setItems((prev) => prev.map((i) => (i.id === id ? data : i)));
       return data;
     } catch (err) {
-      const prev = previous;
-      setItems((current) => current.map((i) => (i.id === id && prev ? prev : i)));
+      setItems((current) => current.map((i) => (i.id === id ? previous : i)));
       throw err;
     }
-  }, []);
+  }, [items]);
 
   const remove = useCallback(async (id: number) => {
     await inventoryApi.remove(id);
