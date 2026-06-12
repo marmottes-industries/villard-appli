@@ -7,6 +7,12 @@ et ce projet suit le [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+## [1.1.2] - 2026-06-12
+
+### Fix
+
+- **Checklist course** assure la cohérence du `previous` state dans les mises à jour de l'inventaire et du magasin de courses.
+
 ## [1.1.1] - 2026-06-11
 
 ### Fix
@@ -48,7 +54,8 @@ Première version publique, distribuée en APK Android via les *releases* GitHub
 - L'app est un client léger de l'API `villard-api` (Symfony + API Platform 4).
   L'URL de l'API est lue depuis `EXPO_PUBLIC_API_URL` au moment du build.
 
-[Non publié]: https://github.com/marmottes-industries/villard-appli/compare/v1.1.1...HEAD
+[Non publié]: https://github.com/marmottes-industries/villard-appli/compare/v1.1.2...HEAD
+[1.1.2]: https://github.com/marmottes-industries/villard-appli/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/marmottes-industries/villard-appli/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/marmottes-industries/villard-appli/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/marmottes-industries/villard-appli/releases/tag/v1.0.0
