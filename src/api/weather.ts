@@ -6,6 +6,7 @@ export interface CurrentWeather {
   weatherCode: number;
   windSpeed: number;
   humidity: number;
+  snowDepth: number; // m (snowpack on the ground)
   time: string; // ISO local datetime
 }
 
@@ -26,13 +27,20 @@ export interface AirQuality {
   pm10: number | null;
 }
 
-export interface WeatherForecast {
+export interface LocationForecast {
+  key: string; // 'villard' | 'cote2000'
+  name: string;
   latitude: number;
   longitude: number;
-  timezone: string;
+  elevation: number; // m
   current: CurrentWeather;
   daily: DailyForecast[];
   airQuality: AirQuality;
+}
+
+export interface WeatherForecast {
+  timezone: string;
+  locations: LocationForecast[];
 }
 
 export const weatherApi = {

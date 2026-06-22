@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { View, StyleSheet, ScrollView, ActivityIndicator, Pressable } from 'react-native';
 import { Card, Text } from '@/src/components/ui';
 import { Icon } from '@/src/components/icons/Icon';
@@ -18,6 +18,8 @@ type Props = {
 export function WeatherCard({ occupations }: Props) {
   const weather = useWeather();
   const todayISO = fmtISO(todayMidday());
+  // Selected location ('villard' by default — the apartment).
+  const [selectedKey, setSelectedKey] = useState('villard');
 
   const isDuringStay = useMemo(() => {
     // ISO 'YYYY-MM-DD' compares correctly as a string; inclusive of arrival/departure.
@@ -54,14 +56,40 @@ export function WeatherCard({ occupations }: Props) {
   }
 
   const data = weather.data;
-  if (!data) return null;
+  if (!data || data.locations.length === 0) return null;
 
-  const current = data.current;
+  const locations = data.locations;
+  const location = locations.find((l) => l.key === selectedKey) ?? locations[0];
+  const current = location.current;
   const currentMeta = weatherMeta(current.weatherCode);
-  const air = aqiMeta(data.airQuality.europeanAqi);
+  const air = aqiMeta(location.airQuality.europeanAqi);
+  // Snow depth comes in metres; show in cm when there's snow on the ground.
+  const snowDepthCm = Math.round(current.snowDepth * 100);
 
   return (
     <Card style={styles.card}>
+      {locations.length > 1 ? (
+        <View style={styles.seg}>
+          {locations.map((l) => {
+            const on = l.key === location.key;
+            return (
+              <Pressable
+                key={l.key}
+                onPress={() => setSelectedKey(l.key)}
+                style={[styles.segBtn, on && styles.segBtnOn]}
+              >
+                <Text variant="label" color={on ? colors.forest : colors.ink3}>
+                  {l.name}
+                </Text>
+                <Text variant="mono" color={on ? colors.forest : colors.ink3}>
+                  {Math.round(l.elevation)} m
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      ) : null}
+
       <View style={styles.head}>
         <View style={styles.now}>
           <Icon name={currentMeta.icon} size={40} color={colors.forest} />
@@ -86,6 +114,14 @@ export function WeatherCard({ occupations }: Props) {
                   {current.humidity} %
                 </Text>
               </View>
+              {snowDepthCm > 0 ? (
+                <View style={styles.stat}>
+                  <Icon name="snow" size={14} color="#6aa9d8" />
+                  <Text variant="small" color="#6aa9d8" weight="700">
+                    {snowDepthCm} cm au sol
+                  </Text>
+                </View>
+              ) : null}
             </View>
           </View>
         </View>
@@ -105,7 +141,7 @@ export function WeatherCard({ occupations }: Props) {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.forecast}
       >
-        {data.daily.map((d) => {
+        {location.daily.map((d) => {
           const meta = weatherMeta(d.weatherCode);
           const isToday = d.date === todayISO;
           const isStay = isDuringStay(d.date);
@@ -117,7 +153,7 @@ export function WeatherCard({ occupations }: Props) {
               <Text variant="mono" color={colors.ink3}>
                 {isToday
                   ? 'Auj.'
-                  : `${DOW[(parseISO(d.date).getDay() + 6) % 7]} ${parseISO(d.date).getDate()}`}
+                  : `${DOW[(parseISO(d.date).getDay() + 6) % 7]} ${parseISO(d.date).getDate()}/${parseISO(d.date).getMonth() + 1}`}
               </Text>
               <Icon name={meta.icon} size={22} color={colors.forest} />
               <View style={styles.dayTemps}>
@@ -137,9 +173,7 @@ export function WeatherCard({ occupations }: Props) {
                   {d.precipitation} mm
                 </Text>
               ) : (
-                <Text variant="mono" color={colors.line}>
-                  ·
-                </Text>
+                <View style={styles.dayExtraEmpty} />
               )}
             </View>
           );
@@ -158,6 +192,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
+  },
+  seg: {
+    flexDirection: 'row',
+    gap: spacing.xxs,
+    padding: 3,
+    marginBottom: spacing.md,
+    backgroundColor: colors.sageBg,
+    borderRadius: radii.md,
+    alignSelf: 'flex-start',
+  },
+  segBtn: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: spacing.xs,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.md,
+    borderRadius: radii.sm,
+  },
+  segBtnOn: {
+    backgroundColor: colors.card,
   },
   head: {
     flexDirection: 'row',
@@ -219,5 +273,8 @@ const styles = StyleSheet.create({
   dayTemps: {
     flexDirection: 'row',
     gap: spacing.xxs,
+  },
+  dayExtraEmpty: {
+    height: 14, // reserve the row so day cards keep a consistent height
   },
 });
