@@ -6,7 +6,8 @@ export type IconName =
   | 'chevL' | 'chevR' | 'chevD' | 'search' | 'check' | 'x' | 'user' | 'users'
   | 'gear' | 'trash' | 'alert' | 'clock' | 'grid' | 'cols' | 'list' | 'arrow'
   | 'pin' | 'linen' | 'dish' | 'bath' | 'refresh' | 'edit' | 'logout' | 'menu'
-  | 'mobile' | 'note' | 'sun' | 'tools' | 'home' | 'info';
+  | 'mobile' | 'note' | 'sun' | 'tools' | 'home' | 'info'
+  | 'cloudSun' | 'cloud' | 'fog' | 'rain' | 'snow' | 'storm' | 'wind' | 'droplet';
 
 // Mapping vers @expo/vector-icons (style linear, stroke ~1.6 -> Feather).
 // Quelques entrées tombent sur MaterialCommunityIcons faute d'équivalent Feather.
@@ -52,6 +53,14 @@ const MAP: Record<IconName, Mapping> = {
   tools:    { lib: 'feather', name: 'tool' },
   home:     { lib: 'feather', name: 'home' },
   info:     { lib: 'feather', name: 'info' },
+  cloudSun: { lib: 'mci', name: 'weather-partly-cloudy' },
+  cloud:    { lib: 'feather', name: 'cloud' },
+  fog:      { lib: 'mci', name: 'weather-fog' },
+  rain:     { lib: 'feather', name: 'cloud-rain' },
+  snow:     { lib: 'feather', name: 'cloud-snow' },
+  storm:    { lib: 'feather', name: 'cloud-lightning' },
+  wind:     { lib: 'feather', name: 'wind' },
+  droplet:  { lib: 'feather', name: 'droplet' },
 };
 
 type Props = {

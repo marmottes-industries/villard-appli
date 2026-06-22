@@ -20,6 +20,7 @@ import {
 } from '@/src/lib/dates';
 import type { Occupation } from '@/src/api/occupations';
 import { OccupationForm, type FormInitial } from '@/src/components/planning/OccupationForm';
+import { WeatherCard } from '@/src/components/planning/WeatherCard';
 
 type Group = { key: string; label: string; items: Occupation[] };
 
@@ -161,6 +162,8 @@ export default function PlanningScreen() {
       </View>
 
       <View style={styles.body}>
+        <WeatherCard occupations={occupations.items} />
+
         {occupations.state === 'loading' && occupations.items.length === 0 ? (
           <Card>
             <View style={styles.center}>
