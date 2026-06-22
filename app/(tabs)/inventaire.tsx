@@ -56,11 +56,13 @@ export default function InventaireScreen() {
 
   const filtered = useMemo<InventoryItem[]>(() => {
     const q = query.trim().toLowerCase();
-    return inventory.items.filter((i) =>
-      (cat === 'all' || i.category === cat) &&
-      (stateFilter === 'all' || i.state === stateFilter) &&
-      (q === '' || `${i.name} ${i.location ?? ''} ${i.note ?? ''}`.toLowerCase().includes(q))
-    );
+    return inventory.items
+      .filter((i) =>
+        (cat === 'all' || i.category === cat) &&
+        (stateFilter === 'all' || i.state === stateFilter) &&
+        (q === '' || `${i.name} ${i.location ?? ''} ${i.note ?? ''}`.toLowerCase().includes(q))
+      )
+      .sort((a, b) => a.name.localeCompare(b.name, 'fr', { sensitivity: 'base' }));
   }, [inventory.items, cat, stateFilter, query]);
 
   const visibleCategories = useMemo<DisplayCategory[]>(() => {

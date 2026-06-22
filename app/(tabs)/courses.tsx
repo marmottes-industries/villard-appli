@@ -54,13 +54,15 @@ export default function CoursesScreen() {
 
   const filtered = useMemo<ShoppingItem[]>(() => {
     const q = query.trim().toLowerCase();
-    return shopping.items.filter((i) =>
-      (cat === 'all' || i.category === cat) &&
-      (purchase === 'all'
-        || (purchase === 'todo' && !i.purchased)
-        || (purchase === 'done' && i.purchased)) &&
-      (q === '' || i.name.toLowerCase().includes(q))
-    );
+    return shopping.items
+      .filter((i) =>
+        (cat === 'all' || i.category === cat) &&
+        (purchase === 'all'
+          || (purchase === 'todo' && !i.purchased)
+          || (purchase === 'done' && i.purchased)) &&
+        (q === '' || i.name.toLowerCase().includes(q))
+      )
+      .sort((a, b) => a.name.localeCompare(b.name, 'fr', { sensitivity: 'base' }));
   }, [shopping.items, cat, purchase, query]);
 
   const visibleCategories = useMemo<DisplayCategory[]>(() => {
