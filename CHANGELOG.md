@@ -7,10 +7,12 @@ et ce projet suit le [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
-## [1.2.0] - 2026-06-22
+## [1.3.0] - 2026-06-22
 
 ### Added
 
+- **Planning** : Ajout d'un widget météo avec la météo sur deux prochaines semaines. A villard et Côte 2000.
+- **Réservations** : Prévisualisation de la météo lors de la création d'une réservation si disponible.
 - **Inventaire** : tri alphabétique des articles dans l'inventaire et la liste de courses.
 
 ## [1.1.2] - 2026-06-12
@@ -60,7 +62,8 @@ Première version publique, distribuée en APK Android via les *releases* GitHub
 - L'app est un client léger de l'API `villard-api` (Symfony + API Platform 4).
   L'URL de l'API est lue depuis `EXPO_PUBLIC_API_URL` au moment du build.
 
-[Non publié]: https://github.com/marmottes-industries/villard-appli/compare/v1.2.0...HEAD
+[Non publié]: https://github.com/marmottes-industries/villard-appli/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/marmottes-industries/villard-appli/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/marmottes-industries/villard-appli/compare/v1.1.2...v1.2.0
 [1.1.2]: https://github.com/marmottes-industries/villard-appli/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/marmottes-industries/villard-appli/compare/v1.1.0...v1.1.1
